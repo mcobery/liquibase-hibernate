@@ -1,7 +1,16 @@
 package liquibase.ext.hibernate.snapshot;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import liquibase.database.Database;
-import liquibase.database.structure.*;
+import liquibase.database.structure.Column;
+import liquibase.database.structure.ForeignKey;
+import liquibase.database.structure.Index;
+import liquibase.database.structure.PrimaryKey;
+import liquibase.database.structure.Table;
 import liquibase.diff.DiffStatusListener;
 import liquibase.exception.DatabaseException;
 import liquibase.ext.hibernate.database.HibernateDatabase;
@@ -9,14 +18,10 @@ import liquibase.ext.hibernate.database.HibernateGenericDialect;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.DatabaseSnapshotGenerator;
 import liquibase.util.StringUtils;
+
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.Mapping;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 public class HibernateDatabaseSnapshotGenerator implements DatabaseSnapshotGenerator {
     private HibernateDatabase database;
@@ -83,7 +88,7 @@ public class HibernateDatabaseSnapshotGenerator implements DatabaseSnapshotGener
 
 //            Dialect dialect = new MySQL5InnoDBDialect();
 
-            Iterator tableMappings = cfg.getTableMappings();
+            Iterator<org.hibernate.mapping.Table> tableMappings = cfg.getTableMappings();
             while (tableMappings.hasNext()) {
                 org.hibernate.mapping.Table hibernateTable = (org.hibernate.mapping.Table) tableMappings.next();
                 if (hibernateTable.isPhysicalTable()) {
@@ -91,7 +96,7 @@ public class HibernateDatabaseSnapshotGenerator implements DatabaseSnapshotGener
                     snapshot.getTables().add(table);
                     System.out.println("seen table " + table.getName());
 
-                    Iterator columnIterator = hibernateTable.getColumnIterator();
+                    Iterator<?> columnIterator = hibernateTable.getColumnIterator();
                     while (columnIterator.hasNext()) {
                         org.hibernate.mapping.Column hibernateColumn = (org.hibernate.mapping.Column) columnIterator.next();
                         Column column = new Column();
@@ -115,7 +120,7 @@ public class HibernateDatabaseSnapshotGenerator implements DatabaseSnapshotGener
                         table.getColumns().add(column);
                     }
 
-                    Iterator indexIterator = hibernateTable.getIndexIterator();
+                    Iterator<?> indexIterator = hibernateTable.getIndexIterator();
                     while (indexIterator.hasNext()) {
                         org.hibernate.mapping.Index hibernateIndex = (org.hibernate.mapping.Index) indexIterator.next();
                         Index index = new Index();
@@ -130,7 +135,7 @@ public class HibernateDatabaseSnapshotGenerator implements DatabaseSnapshotGener
                         snapshot.getIndexes().add(index);
                     }
 
-                    Iterator uniqueIterator = hibernateTable.getUniqueKeyIterator();
+                    Iterator<?> uniqueIterator = hibernateTable.getUniqueKeyIterator();
                     while (uniqueIterator.hasNext()) {
                         org.hibernate.mapping.UniqueKey hiberateUnique = (org.hibernate.mapping.UniqueKey) uniqueIterator.next();
 
@@ -164,7 +169,7 @@ public class HibernateDatabaseSnapshotGenerator implements DatabaseSnapshotGener
                 org.hibernate.mapping.Table hibernateTable = (org.hibernate.mapping.Table) tableMappings.next();
                 if (hibernateTable.isPhysicalTable()) {
 
-                    Iterator fkIterator = hibernateTable.getForeignKeyIterator();
+                    Iterator<?> fkIterator = hibernateTable.getForeignKeyIterator();
                     while (fkIterator.hasNext()) {
                         org.hibernate.mapping.ForeignKey hibernateForeignKey = (org.hibernate.mapping.ForeignKey) fkIterator.next();
                         if (hibernateForeignKey.getTable() != null
@@ -241,7 +246,7 @@ public class HibernateDatabaseSnapshotGenerator implements DatabaseSnapshotGener
         if (key == null) {
             return false;
         }
-        Iterator columnIterator = key.getColumnIterator();
+        Iterator<?> columnIterator = key.getColumnIterator();
         while (columnIterator.hasNext()) {
             if (columnIterator.next().equals(hibernateColumn)) {
                 return true;
@@ -257,4 +262,9 @@ public class HibernateDatabaseSnapshotGenerator implements DatabaseSnapshotGener
     public boolean hasIndex(String s, String s1, String s2, Database database, String s3) throws DatabaseException {
         return false;
     }
+
+	public boolean hasView(String arg0, String arg1, Database arg2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }
